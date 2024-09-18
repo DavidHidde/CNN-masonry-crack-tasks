@@ -83,7 +83,7 @@ class Train(Operation):
             network_config.batch_size,
             False,
             network_config.binarize_labels,
-            data_augmentor
+            None
         )
 
         # Serialize model to JSON
