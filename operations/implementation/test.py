@@ -4,7 +4,7 @@ from operations.operation import Operation
 import operations.arguments as arguments
 from network.model import load_model
 from util.hdf5 import HDF5DatasetGenerator
-from util.visualize import visualize_prediction_comparisons, save_predictions
+from util.visualize import visualize_prediction_comparisons, save_predictions, print_prediction_metrics
 from util.config import load_network_config, load_data_config, load_output_config
 
 
@@ -35,6 +35,7 @@ class Test(Operation):
             max_queue_size=network_config.batch_size * 2,
             verbose=1
         )
+        print_prediction_metrics(predictions, output_config, dilate)
 
         # Plot or just save the output
         if visualize_comparisons:

@@ -12,6 +12,21 @@ from util.hdf5 import IMAGES_KEY, LABELS_KEY
 BINARIZATION_THRESHOLD = 0.5
 LABEL_COLOR = 0.5
 
+def print_prediction_metrics(predictions: tf.Tensor, output_config: OutputConfig, dilate_labels: bool) -> None:
+    """Print the F1-score, recall and precision over the entire validation set."""
+    data_file = h5py.File(output_config.validation_set_file, 'r')
+    labels = tf.convert_to_tensor(np.array(data_file[LABELS_KEY][:]), dtype=tf.float32)
+
+    recall_value = float(recall(labels, predictions, dilate_labels))
+    precision_value = float(precision(labels, predictions, dilate_labels))
+    f1_score_value = float(f1_score(labels, predictions, dilate_labels))
+
+    print(f'''
+Precision: {precision_value:.3f},
+Recall: {recall_value:.3f},
+F1-score: {f1_score_value:.3f}
+    ''')
+
 def save_predictions(predictions: tf.Tensor, output_config: OutputConfig) -> None:
     """Save the predictions plainly as just images."""
     for idx, prediction in enumerate(predictions):
