@@ -15,7 +15,7 @@ FPN_BLOCK_FILTERS = 512
 
 UNET_NUM_FILTERS = 64
 UNET_DECODER_FILTERS = (1024, 512, 256, 128, 64)
-UNET_DECODER_BLOCK_TYPE = 'transpose'
+UNET_DECODER_BLOCK_TYPE = 'upsampling'
 
 PSP_CONV_FILTERS = 512
 
@@ -62,7 +62,7 @@ def build_model(network_config: NetworkConfig, input_dims: tuple[int, int, int])
         'encoder_weights': 'imagenet' if network_config.use_pretrained else None,
     }
     if network_config.backbone is not None:
-        sm_model_kwargs['backbone_name']: network_config.backbone.value
+        sm_model_kwargs['backbone_name'] = network_config.backbone.value
 
     match network_config.model:
         case ModelType.DeepCrack:
