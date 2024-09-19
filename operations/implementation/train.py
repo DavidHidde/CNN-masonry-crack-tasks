@@ -39,7 +39,7 @@ class Train(Operation):
             model = load_model(network_config, output_config, dataset_config.image_dims, weights)
 
             # Determine start epoch. We assume the file follows the regular naming scheme (epoch_X_*.)
-            parts = weights.split('_')
+            parts = weights.split(os.path.sep)[-1].split('_')
             for idx, part in enumerate(parts):
                 if part == 'epoch':
                     start_epoch = int(parts[idx + 1])
