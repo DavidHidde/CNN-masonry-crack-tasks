@@ -1,5 +1,8 @@
 from typing import Any, Union
 
+from network.loss import determine_loss_function
+from network.metrics import get_standard_metrics
+from network.optimizer import determine_optimizer
 from operations.operation import Operation
 import operations.arguments as arguments
 from network.model import load_model
@@ -18,6 +21,11 @@ class Test(Operation):
         output_config = load_output_config(network_id=network_config.id, dataset_id=dataset_config.dataset_dir)
 
         model = load_model(network_config, output_config, dataset_config.image_dims, weights)
+        model.compile(
+            optimizer=determine_optimizer(network_config),
+            loss=determine_loss_function(network_config),
+            metrics=[get_standard_metrics()]
+        )
 
         # Do not use data augmentation when evaluating model: aug=None
         eval_gen = HDF5DatasetGenerator(
@@ -35,6 +43,16 @@ class Test(Operation):
             max_queue_size=network_config.batch_size * 2,
             verbose=1
         )
+        metrics = model.evaluate(
+            eval_gen(),
+            steps=eval_gen.num_images // network_config.batch_size + 1,
+            verbose=1,
+            return_dict=True
+        )
+        print('\n--- Results ---')
+        for key, value in metrics.items():
+            print(f'{key}: {(value * 100):.2f}')
+        print('---------------\n')
 
         # Plot or just save the output
         if visualize_comparisons:

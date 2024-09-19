@@ -1,8 +1,9 @@
 from typing import Callable
 
 import tensorflow as tf
+import keras
 
-from network.loss.loss_functions import weighted_cross_entropy, f1_score_loss
+from network.loss.loss_functions import weighted_binary_cross_entropy, dilated_dice_loss
 from util.config.network_config import NetworkConfig
 from util.types import LossType
 
@@ -19,10 +20,10 @@ def determine_loss_function(config: NetworkConfig) -> Callable[[tf.Tensor, tf.Te
         case LossType.BCE:
             return tf.keras.losses.BinaryCrossentropy()
         case LossType.WCE:
-            return weighted_cross_entropy(WCE_BETA)
+            return weighted_binary_cross_entropy(WCE_BETA)
         case LossType.F1Score:
-            return f1_score_loss(False)
+            return keras.losses.Dice()
         case LossType.F1ScoreDilate:
-            return f1_score_loss(True)
+            return dilated_dice_loss
         case _:
             raise ValueError(f'Unknown loss type: {config.loss}')

@@ -8,13 +8,15 @@ This is a fork of the [crack_detection_CNN_masonry repoistory](https://github.co
 * Add better generalizability through the use of configuration files and enhanced dataset support. Add support for more segmentation models.
 * Dependency cleanup: clearly indicate all dependencies through a `requirements.txt` file and make the framework compatible with modern Tensorflow.
 * Add QOL features such as test set creation and resuming training.
+* Fix errors in the original code.
 
 For changes compared to the original repo, please have a look at the [PR descriptions](https://github.com/DavidHidde/CNN-masonry-crack-tasks/pulls?q=is%3Apr+is%3Aclosed+). The main changes include:
 
-* Focal loss computation now uses the Tensorflow implementation rather than a custom implementation.
+* Standardized loss computations. Dice, focal and WCE loss now utilize the direct formulas or Keras/TF functionality.
+* Fixes F1-score computation. The original repo can have F1-scores above 1 if dilated due to an error in the computation.
 * Unet now only uses the segmentation models variant rather than a custom one depending on the use of a backbone. The Unet parameters have also been updated to use transpose layers in the decoder, matching the paper.
 * DeepCrack uses a new [implementation](https://github.com/DavidHidde/DeepCrack-Tensorflow).
-* Newer package versions, meaning that some things might be slightly different.
+* Newer package versions, making the code compatible with modern systems and Python versions.
 
 Overall, the core functionality is retained but updated to work with modern setups, be more flexible as well as maintainable. Some results might differ from the original paper, but it is clear that the forked repo does not fully represent the original paper due to its broken state and lack of crack classification support.
 
@@ -133,7 +135,4 @@ The following codes are based on material provided by **[Adrian Rosebrock](linke
 - Adrian Rosebrock, Keras: Starting, stopping, and resuming training, PyImageSearch, https://www.pyimagesearch.com/2019/09/23/keras-starting-stopping-and-resuming-training/, accessed on 24 February 2021  
 - Adrian Rosebrock, How to use Keras fit and fit_generator (a hands-on tutorial), PyImageSearch, https://www.pyimagesearch.com/2018/12/24/how-to-use-keras-fit-and-fit_generator-a-hands-on-tutorial/, accessed on 24 February 2021  
 
-The Segmentation Models with pre-trained CNNs are implemented based on the work of **[Pavel Yakubovskiy](https://github.com/qubvel)** and his GitHub Repository https://github.com/qubvel/segmentation_models  
-
-The Weighted Cross-Entropy (WCE) Loss is based on the implementation found in the link below:  
-https://jeune-research.tistory.com/entry/Loss-Functions-for-Image-Segmentation-Distribution-Based-Losses
+The Segmentation Models with pre-trained CNNs are implemented based on the work of **[Pavel Yakubovskiy](https://github.com/qubvel)** and his GitHub Repository https://github.com/qubvel/segmentation_models
