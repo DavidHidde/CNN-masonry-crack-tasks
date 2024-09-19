@@ -2,35 +2,53 @@ from typing import Callable
 
 import tensorflow as tf
 import tensorflow.keras.backend as K
+from keras.src import ops
 
 from util.image_operations import dilation2d
 
+def clip_sum(tensor: tf.Tensor) -> float:
+    """Clip the values between 0 and 1 and then sum them."""
+    return ops.sum(tf.clip_by_value(tensor, K.epsilon() , 1. - K.epsilon()))
 
-def weighted_cross_entropy(beta: float) -> Callable[[tf.Tensor, tf.Tensor], tf.Tensor]:
+def weighted_binary_cross_entropy(beta: float) -> Callable[[tf.Tensor, tf.Tensor], tf.Tensor]:
     """
     Weighted Cross-Entropy (WCE) Loss.
-    It is based on the implementation found in the link below:
-    https://jeune-research.tistory.com/entry/Loss-Functions-for-Image-Segmentation-Distribution-Based-Losses
+    Applies binary cross entropy loss using a beta value for weights.
+
+    See https://medium.com/the-owl/weighted-binary-cross-entropy-losses-in-keras-e3553e28b8db
     """
     def loss_function(y_true: tf.Tensor, y_pred: tf.Tensor) -> tf.Tensor:
-        # Convert to logits
-        y_pred = tf.clip_by_value(y_pred, tf.keras.backend.epsilon(), 1 - tf.keras.backend.epsilon())
-        y_pred = tf.math.log(y_pred / (1 - y_pred))
+        y_pred = tf.clip_by_value(ops.convert_to_tensor(y_pred), K.epsilon(), 1. - K.epsilon())
+        y_true = tf.clip_by_value(ops.cast(y_true, y_pred.dtype), K.epsilon(), 1. - K.epsilon())
 
-        loss = tf.nn.weighted_cross_entropy_with_logits(logits=y_pred, labels=y_true, pos_weight=beta)
-        return tf.reduce_mean(loss)
+        bce = beta * y_true * tf.math.log(y_pred)         # Positive class, apply weight beta
+        bce += (1. - y_true) * tf.math.log(1. - y_pred)   # Negative class, apply weight 1.
+        return ops.mean(-bce, axis=-1)
+
     return loss_function
 
-def f1_score_loss(dilate: bool = False, smooth: float = 1.) -> Callable[[tf.Tensor, tf.Tensor], tf.Tensor]:
+def dilated_dice_loss(y_true: tf.Tensor, y_pred: tf.Tensor) -> tf.Tensor:
     """
-    The F1-score, same as the one used for the metrics but adjusted to return a Tensor.
-    We subtract it by one since we aim for F1-score maximization and loss minimization.
-    """
-    def loss_function(y_true: tf.Tensor, y_pred: tf.Tensor) -> tf.Tensor:
-        flat_y_true = K.flatten(y_true)
-        flat_y_pred = K.flatten(y_pred)
+    Dice loss (f1-loss) but dilated.
+    We need to keep in mind that the dilation should only affect TPs and FPs, so the usual trick of summing y_true and y_pred doesn't work.
 
-        intersection = K.flatten(dilation2d(y_true, 5)) * flat_y_pred if dilate else flat_y_true * flat_y_pred
-        score = (2. * K.sum(intersection) + smooth) / (K.sum(flat_y_true) + K.sum(flat_y_pred) + smooth)
-        return 1. - score
-    return loss_function
+    See https://github.com/keras-team/keras/blob/v3.3.3/keras/src/losses/losses.py#L1983
+    """
+    y_pred = ops.convert_to_tensor(y_pred)
+    y_true = ops.cast(y_true, y_pred.dtype)
+    y_true_dilated = dilation2d(y_true, 5)
+
+    inputs = ops.reshape(y_true, [-1])
+    inputs_dilated = ops.reshape(y_true_dilated, [-1])
+    targets = ops.reshape(y_pred, [-1])
+
+    tp = clip_sum(targets * inputs_dilated)
+    fp = clip_sum(targets - inputs_dilated)
+    fn = clip_sum(inputs - targets)
+
+    dice = ops.divide(
+        2. * tp,
+        2. * tp + fp + fn + K.epsilon(),
+    )
+
+    return 1. - dice
