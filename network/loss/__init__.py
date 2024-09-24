@@ -16,9 +16,9 @@ def determine_loss_function(config: NetworkConfig) -> Callable[[tf.Tensor, tf.Te
     """Determine the loss function using the config and function specific values around it."""
     match config.loss:
         case LossType.FocalLoss:
-            return tf.keras.losses.BinaryFocalCrossentropy(from_logits=False, apply_class_balancing=False, alpha=FOCAL_LOSS_ALPHA, gamma=FOCAL_LOSS_GAMMA)
+            return keras.losses.BinaryFocalCrossentropy(from_logits=False, apply_class_balancing=False, alpha=FOCAL_LOSS_ALPHA, gamma=FOCAL_LOSS_GAMMA)
         case LossType.BCE:
-            return tf.keras.losses.BinaryCrossentropy()
+            return keras.losses.BinaryCrossentropy()
         case LossType.WCE:
             return weighted_binary_cross_entropy(WCE_BETA)
         case LossType.F1Score:

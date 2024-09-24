@@ -3,7 +3,7 @@ from typing import Any
 from operations.operation import Operation
 import operations.arguments as arguments
 from util.config import load_network_config, load_output_config, load_data_config
-from tensorflow.keras.utils import plot_model
+from keras.utils import plot_model
 from network.loss import determine_loss_function
 from network.metrics import get_standard_metrics
 from network.model import build_model

@@ -9,9 +9,9 @@ from operations.operation import Operation
 import operations.arguments as arguments
 from network.callbacks import EpochCheckpoint, TrainingMonitor
 from util.hdf5 import HDF5DatasetGenerator
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
-from tensorflow.keras.callbacks import ModelCheckpoint, CSVLogger
+from keras.callbacks import ModelCheckpoint, CSVLogger
 from util.config import load_network_config, load_data_config, load_output_config
+from util.image_operations import get_data_augmentor
 from util.types import MetricType
 
 
@@ -53,20 +53,12 @@ class Train(Operation):
         model.compile(
             optimizer=determine_optimizer(network_config),
             loss=determine_loss_function(network_config),
-            metrics=[get_standard_metrics()]
+            metrics=get_standard_metrics()
         )
 
         # Data augmentation for training and validation sets
         if network_config.augment_data:
-            data_augmentor = ImageDataGenerator(
-                rotation_range=20,
-                zoom_range=0.15,
-                width_shift_range=0.2,
-                height_shift_range=0.2,
-                shear_range=0.15,
-                horizontal_flip=True,
-                fill_mode='nearest'
-            )
+            data_augmentor = get_data_augmentor()
         else:
             data_augmentor = None
 
@@ -109,7 +101,7 @@ class Train(Operation):
             monitor_metric
         )
         model_checkpoint = ModelCheckpoint(
-            os.path.join(output_config.best_models_dir, f'epoch_{{epoch}}_{monitor_metric.value}_{{val_{monitor_metric.value}:.3f}}.keras'),
+            os.path.join(output_config.best_models_dir, f'epoch_{{epoch}}_{monitor_metric.value}_{{val_{monitor_metric.value}:.3f}}.weights.h5'),
             monitor=f'val_{monitor_metric.value}',
             verbose=1,
             save_best_only=True,
@@ -127,7 +119,6 @@ class Train(Operation):
             validation_steps=val_gen.num_images // network_config.batch_size,
             initial_epoch=start_epoch,
             epochs=network_config.num_epochs,
-            max_queue_size=network_config.batch_size * 2,
             callbacks=[
                 csv_logger,
                 epoch_checkpoint,

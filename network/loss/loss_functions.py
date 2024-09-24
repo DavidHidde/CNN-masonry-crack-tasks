@@ -1,7 +1,8 @@
 from typing import Callable
 
+import keras
 import tensorflow as tf
-import tensorflow.keras.backend as K
+import keras.backend as K
 from keras.src import ops
 
 from util.image_operations import dilation2d
@@ -10,6 +11,7 @@ def clip_sum(tensor: tf.Tensor) -> float:
     """Clip the values between 0 and 1 and then sum them."""
     return ops.sum(tf.clip_by_value(tensor, K.epsilon() , 1. - K.epsilon()))
 
+@keras.saving.register_keras_serializable()
 def weighted_binary_cross_entropy(beta: float) -> Callable[[tf.Tensor, tf.Tensor], tf.Tensor]:
     """
     Weighted Cross-Entropy (WCE) Loss.
@@ -27,6 +29,7 @@ def weighted_binary_cross_entropy(beta: float) -> Callable[[tf.Tensor, tf.Tensor
 
     return loss_function
 
+@keras.saving.register_keras_serializable()
 def dilated_dice_loss(y_true: tf.Tensor, y_pred: tf.Tensor) -> tf.Tensor:
     """
     Dice loss (f1-loss) but dilated.

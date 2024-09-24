@@ -1,5 +1,7 @@
-from typing import Generator
+from typing import Generator, Union
 
+import tensorflow as tf
+import keras
 import numpy as np
 import h5py
 
@@ -18,6 +20,8 @@ class HDF5DatasetGenerator:
 
     shuffle: bool
     binarize_labels: bool
+
+    data_augmentor: Union[keras.Sequential, None]
 
     def __init__(
         self,
@@ -41,19 +45,15 @@ class HDF5DatasetGenerator:
         pass_idx = 0
         while pass_idx < passes:
             for batch_idx in np.arange(0, self.num_images, self.batch_size):
-                images = self.data_file[IMAGES_KEY][batch_idx: batch_idx + self.batch_size]
-                labels = self.data_file[LABELS_KEY][batch_idx: batch_idx + self.batch_size]
+                images = tf.convert_to_tensor(self.data_file[IMAGES_KEY][batch_idx: batch_idx + self.batch_size], dtype=tf.float32)
+                labels = tf.convert_to_tensor(self.data_file[LABELS_KEY][batch_idx: batch_idx + self.batch_size], dtype=tf.float32)
 
                 if self.data_augmentor is not None:
-                    image_generator = self.data_augmentor.flow(images, seed=self.SHUFFLE_SEED, batch_size=self.batch_size, shuffle=self.shuffle)
-                    label_generator = self.data_augmentor.flow(labels, seed=self.SHUFFLE_SEED, batch_size=self.batch_size, shuffle=self.shuffle)
-
-                    train_generator = zip(image_generator, label_generator)
-                    images, labels = next(train_generator)
+                    images = self.data_augmentor(images)
+                    labels = self.data_augmentor(labels)
 
                 if self.binarize_labels:
-                    labels[labels > self.BINARIZATION_THRESHOLD] = 1.
-                    labels[labels <= self.BINARIZATION_THRESHOLD] = 0.
+                    labels = tf.cast(labels > self.BINARIZATION_THRESHOLD, dtype=labels.dtype)
         
                 yield images, labels
 

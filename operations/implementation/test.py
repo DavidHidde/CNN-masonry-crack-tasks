@@ -24,7 +24,7 @@ class Test(Operation):
         model.compile(
             optimizer=determine_optimizer(network_config),
             loss=determine_loss_function(network_config),
-            metrics=[get_standard_metrics()]
+            metrics=get_standard_metrics(),
         )
 
         # Do not use data augmentation when evaluating model: aug=None
@@ -40,7 +40,6 @@ class Test(Operation):
         predictions = model.predict(
             eval_gen(),
             steps=eval_gen.num_images // network_config.batch_size + 1,
-            max_queue_size=network_config.batch_size * 2,
             verbose=1
         )
         metrics = model.evaluate(

@@ -83,7 +83,7 @@ python3 run_model.py -o train -d your_dataset_config.yaml -n your_network_config
 This should train the model for you. In case something happens and the training interrupts, you can choose to resume the model using:
 
 ```bash
-python3 run_model.py -o train -d your_dataset_config.yaml -n your_network_config.yaml --weights name_of_the_newest_checkpoint.keras
+python3 run_model.py -o train -d your_dataset_config.yaml -n your_network_config.yaml --weights name_of_the_newest_checkpoint.weights.h5
 ```
 
 ### Testing the trained model

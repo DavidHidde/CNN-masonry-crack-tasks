@@ -1,6 +1,6 @@
 from typing import Union, TextIO
 
-from tensorflow.keras.callbacks import BaseLogger
+from keras.callbacks import Callback
 import matplotlib.pyplot as plt
 import numpy as np
 import json
@@ -8,7 +8,7 @@ import json
 from util.types import MetricType
 
 
-class TrainingMonitor(BaseLogger):
+class TrainingMonitor(Callback):
     """Logger which saves the metrics of the model every epoch."""
 
     figure_file_path: str

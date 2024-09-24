@@ -1,5 +1,6 @@
+import keras
 import tensorflow as tf
-import tensorflow.keras.backend as K
+import keras.backend as K
 from keras.src import ops
 
 from util.image_operations import dilation2d
@@ -10,6 +11,7 @@ def clip_sum(tensor: tf.Tensor) -> float:
     """Clip the values between 0 and 1 and then sum them."""
     return ops.sum(tf.clip_by_value(tensor, K.epsilon() , 1. - K.epsilon()))
 
+@keras.saving.register_keras_serializable()
 def recall(y_true: tf.Tensor, y_pred: tf.Tensor, dilate=False) -> float:
     """
     Recall = TP / (TP + FN). Dilate label if requested.
@@ -19,6 +21,7 @@ def recall(y_true: tf.Tensor, y_pred: tf.Tensor, dilate=False) -> float:
 
     return tp / (tp + fn + K.epsilon())
 
+@keras.saving.register_keras_serializable()
 def precision(y_true: tf.Tensor, y_pred: tf.Tensor, dilate=False) -> float:
     """
     Precision = TP / (TP + FP). Dilate label if requested.
@@ -30,6 +33,7 @@ def precision(y_true: tf.Tensor, y_pred: tf.Tensor, dilate=False) -> float:
     predicted_positives = clip_sum(y_pred)
     return tp / (predicted_positives + K.epsilon())
 
+@keras.saving.register_keras_serializable()
 def f1_score(y_true: tf.Tensor, y_pred: tf.Tensor, dilate=False) -> float:
     """
     F1-score = 2TP / (2TP + FP + FN). Dilate label if requested.
@@ -47,10 +51,12 @@ def f1_score(y_true: tf.Tensor, y_pred: tf.Tensor, dilate=False) -> float:
     return (2. * tp) / (2. * tp + fp + fn + K.epsilon())
 
 # Macros for Keras metrics. Don't use the functions aside from that
+@keras.saving.register_keras_serializable()
 def precision_dilated(y_true: tf.Tensor, y_pred: tf.Tensor) -> float:
     """Keras macro"""
     return precision(y_true, y_pred, True)
 
+@keras.saving.register_keras_serializable()
 def f1_score_dilated(y_true: tf.Tensor, y_pred: tf.Tensor) -> float:
     """Keras macro"""
     return f1_score(y_true, y_pred, True)

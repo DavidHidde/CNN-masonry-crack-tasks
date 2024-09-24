@@ -1,4 +1,6 @@
 import os
+
+import keras
 import numpy as np
 import tensorflow as tf
 import h5py
@@ -16,7 +18,7 @@ def save_predictions(predictions: tf.Tensor, output_config: OutputConfig) -> Non
     """Save the predictions plainly as just images."""
     for idx, prediction in enumerate(predictions):
         prediction = tf.cast((prediction > BINARIZATION_THRESHOLD) * 255 * LABEL_COLOR, tf.uint8)
-        img = tf.keras.preprocessing.image.array_to_img(prediction, scale=False)
+        img = keras.utils.array_to_img(prediction, scale=False)
         img.save(os.path.join(output_config.predictions_dir, f'{idx}.png'))
 
 def visualize_prediction_comparisons(predictions: tf.Tensor, output_config: OutputConfig, dilate_labels: bool) -> None:
