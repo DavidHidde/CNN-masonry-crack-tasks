@@ -12,9 +12,11 @@ class HDF5DatasetGenerator:
     SHUFFLE_SEED = 2024
     BINARIZATION_THRESHOLD = 0.5
 
-    data_file: h5py.File
     num_images: int
     batch_size: int
+
+    images: np.array
+    labels: np.array
 
     shuffle: bool
     binarize_labels: bool
@@ -31,8 +33,12 @@ class HDF5DatasetGenerator:
         self.binarize_labels = binarize_labels
         self.shuffle = shuffle
 
-        self.data_file = h5py.File(data_file_path, 'r+')
-        self.num_images = len(self.data_file[IMAGES_KEY])
+        data_file = h5py.File(data_file_path, 'r+')
+        # Copy specifically such that we can keep this in memory
+        self.images = np.copy(data_file[IMAGES_KEY])
+        self.labels = np.copy(data_file[LABELS_KEY])
+        self.num_images = len(self.images)
+        data_file.close()
 
         self.data_augmentor = data_augmentor
         
@@ -41,8 +47,8 @@ class HDF5DatasetGenerator:
         pass_idx = 0
         while pass_idx < passes:
             for batch_idx in np.arange(0, self.num_images, self.batch_size):
-                images = self.data_file[IMAGES_KEY][batch_idx: batch_idx + self.batch_size]
-                labels = self.data_file[LABELS_KEY][batch_idx: batch_idx + self.batch_size]
+                images = self.images[batch_idx: batch_idx + self.batch_size]
+                labels = self.labels[batch_idx: batch_idx + self.batch_size]
 
                 if self.data_augmentor is not None:
                     image_generator = self.data_augmentor.flow(images, seed=self.SHUFFLE_SEED, batch_size=self.batch_size, shuffle=self.shuffle)
@@ -58,8 +64,3 @@ class HDF5DatasetGenerator:
                 yield images, labels
 
             pass_idx += 1
-
-    def close(self):
-        """Close the dataset file."""
-        self.data_file.close()
-		
