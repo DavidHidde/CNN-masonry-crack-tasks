@@ -1,8 +1,8 @@
-keras == 3.5.*
+keras == 3.9.*
 keras-applications >= 1.0.7, <=1.0.8
 image-classifiers == 1.0.*
 efficientnet == 1.0.0
-tensorflow == 2.16.*
+tensorflow == 2.19.*
 segmentation-models == 1.0.1
 imutils == 0.5.4
 progressbar2 == 4.2.0
