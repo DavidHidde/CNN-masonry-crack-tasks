@@ -1,7 +1,7 @@
 from typing import Generator, Union
 
-import tensorflow as tf
 import keras
+from keras import ops
 import numpy as np
 import h5py
 
@@ -39,8 +39,8 @@ class HDF5DatasetGenerator:
 
         data_file = h5py.File(data_file_path, 'r+')
         # Copy specifically such that we can keep this in memory
-        self.images = tf.convert_to_tensor(data_file[IMAGES_KEY], dtype=tf.float32)
-        self.labels = tf.convert_to_tensor(data_file[LABELS_KEY], dtype=tf.float32)
+        self.images = ops.convert_to_tensor(data_file[IMAGES_KEY], dtype='float32')
+        self.labels = ops.convert_to_tensor(data_file[LABELS_KEY], dtype='float32')
         self.num_images = len(self.images)
         data_file.close()
 
@@ -59,7 +59,7 @@ class HDF5DatasetGenerator:
                     labels = self.data_augmentor(labels)
 
                 if self.binarize_labels:
-                    labels = tf.cast(labels > self.BINARIZATION_THRESHOLD, dtype=labels.dtype)
+                    labels = ops.cast(labels > self.BINARIZATION_THRESHOLD, dtype=labels.dtype)
         
                 yield images, labels
 

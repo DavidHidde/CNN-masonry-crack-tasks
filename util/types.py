@@ -15,17 +15,15 @@ class LossType(Enum):
     FocalLoss = 'focal_loss'
     WCE = 'wce'
     BCE = 'bce'
-    F1Score = 'f1_score'
-    F1ScoreDilate = 'f1_score_dilated'
+    Dice = 'dice'
 
 class MetricType(Enum):
     """Type of metrics to monitor during training."""
     Accuracy = 'accuracy'
     Recall = 'recall'
     Precision = 'precision'
-    PrecisionDilated = 'precision_dilated'
     F1Score = 'f1_score'
-    F1ScoreDilated = 'f1_score_dilated'
+    IoU = 'iou'
 
 class OptimizerType(Enum):
     """Types of optimization algorithms."""

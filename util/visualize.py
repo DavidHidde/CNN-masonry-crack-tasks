@@ -2,10 +2,10 @@ import os
 
 import keras
 import numpy as np
-import tensorflow as tf
 import h5py
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+from keras import ops
 
 from network.metrics import recall, precision, f1_score
 from util.config import OutputConfig
@@ -14,14 +14,14 @@ from util.hdf5 import IMAGES_KEY, LABELS_KEY
 BINARIZATION_THRESHOLD = 0.5
 LABEL_COLOR = 0.5
 
-def save_predictions(predictions: tf.Tensor, output_config: OutputConfig) -> None:
+def save_predictions(predictions: keras.KerasTensor, output_config: OutputConfig) -> None:
     """Save the predictions plainly as just images."""
     for idx, prediction in enumerate(predictions):
-        prediction = tf.cast((prediction > BINARIZATION_THRESHOLD) * 255 * LABEL_COLOR, tf.uint8)
+        prediction = ops.cast((prediction > BINARIZATION_THRESHOLD) * 255 * LABEL_COLOR, 'uint8')
         img = keras.utils.array_to_img(prediction, scale=False)
         img.save(os.path.join(output_config.predictions_dir, f'{idx}.png'))
 
-def visualize_prediction_comparisons(predictions: tf.Tensor, output_config: OutputConfig, dilate_labels: bool) -> None:
+def visualize_prediction_comparisons(predictions: keras.KerasTensor, output_config: OutputConfig) -> None:
     """Visualize the predictions into a comparison between the image, the ground truth and the predicted label."""
 
     data_file = h5py.File(output_config.validation_set_file, 'r')
@@ -31,7 +31,7 @@ def visualize_prediction_comparisons(predictions: tf.Tensor, output_config: Outp
     images = np.flip(np.array(data_file[IMAGES_KEY][:] * 255, dtype=np.uint8), axis=-1)
     labels = np.array(data_file[LABELS_KEY][:]).squeeze() * LABEL_COLOR
 
-    label_tensors = tf.convert_to_tensor(np.array(data_file[LABELS_KEY][:]), dtype=tf.float32)
+    label_tensors = ops.convert_to_tensor(np.array(data_file[LABELS_KEY][:]), dtype='float32')
     prediction_labels = ((predictions.squeeze() > BINARIZATION_THRESHOLD) * 1) * LABEL_COLOR
     
     # Loop over the images and produce a plot with original image, ground truth and prediction
@@ -39,12 +39,12 @@ def visualize_prediction_comparisons(predictions: tf.Tensor, output_config: Outp
         plot_file = os.path.join(output_config.predictions_dir, f'{image_index}.png')
 
         # Calculate and format metrics
-        y_true = tf.expand_dims(label_tensors[image_index], 0)
-        y_pred = tf.expand_dims(predictions[image_index], 0)
+        y_true = ops.expand_dims(label_tensors[image_index], 0)
+        y_pred = ops.expand_dims(predictions[image_index], 0)
 
-        recall_value = float(recall(y_true, y_pred, dilate_labels))
-        precision_value = float(precision(y_true, y_pred, dilate_labels))
-        f1_score_value = float(f1_score(y_true, y_pred, dilate_labels))
+        recall_value = float(recall(y_true, y_pred))
+        precision_value = float(precision(y_true, y_pred))
+        f1_score_value = float(f1_score(y_true, y_pred))
 
         recall_value = int(round(recall_value, 2) * 100)
         precision_value = int(round(precision_value, 2) * 100)

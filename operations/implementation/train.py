@@ -1,4 +1,5 @@
 import os
+import keras
 from typing import Any, Union
 
 from network.loss import determine_loss_function
@@ -11,8 +12,19 @@ from network.callbacks import EpochCheckpoint, TrainingMonitor
 from util.hdf5 import HDF5DatasetGenerator
 from keras.callbacks import ModelCheckpoint, CSVLogger
 from util.config import load_network_config, load_data_config, load_output_config
-from util.image_operations import get_data_augmentor
 from util.types import MetricType
+
+
+def get_data_augmentor() -> keras.Sequential:
+    """Get the data augmentation layers."""
+    return keras.Sequential(
+        [
+            keras.layers.RandomRotation(factor=20 / 360, fill_mode='nearest'),
+            keras.layers.RandomZoom(height_factor=0.15, width_factor=0.15, fill_mode='nearest'),
+            keras.layers.RandomTranslation(height_factor=0.2, width_factor=0.2, fill_mode='nearest'),
+            keras.layers.RandomFlip(mode='horizontal')
+        ]
+    )
 
 
 class Train(Operation):
@@ -53,7 +65,7 @@ class Train(Operation):
         model.compile(
             optimizer=determine_optimizer(network_config),
             loss=determine_loss_function(network_config),
-            metrics=get_standard_metrics()
+            metrics=get_standard_metrics(),
         )
 
         # Data augmentation for training and validation sets
@@ -101,7 +113,10 @@ class Train(Operation):
             monitor_metric
         )
         model_checkpoint = ModelCheckpoint(
-            os.path.join(output_config.best_models_dir, f'epoch_{{epoch}}_{monitor_metric.value}_{{val_{monitor_metric.value}:.3f}}.weights.h5'),
+            os.path.join(
+                output_config.best_models_dir,
+                f'epoch_{{epoch}}_{monitor_metric.value}_{{val_{monitor_metric.value}:.3f}}.weights.h5'
+            ),
             monitor=f'val_{monitor_metric.value}',
             verbose=1,
             save_best_only=True,

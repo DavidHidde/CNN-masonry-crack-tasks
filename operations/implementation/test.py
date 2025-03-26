@@ -14,7 +14,7 @@ from util.config import load_network_config, load_data_config, load_output_confi
 class Test(Operation):
     """Operation which tests a trained network"""
 
-    def __call__(self, dataset: str, network: str, weights: Union[str, None], dilate: bool, visualize_comparisons: bool) -> None:
+    def __call__(self, dataset: str, network: str, weights: Union[str, None], visualize_comparisons: bool) -> None:
         """Generate the predictions given a specific configuration."""
         network_config = load_network_config(network)
         dataset_config = load_data_config(dataset)
@@ -55,7 +55,7 @@ class Test(Operation):
 
         # Plot or just save the output
         if visualize_comparisons:
-            visualize_prediction_comparisons(predictions, output_config, dilate)
+            visualize_prediction_comparisons(predictions, output_config)
         else:
             save_predictions(predictions, output_config)
 
@@ -64,6 +64,5 @@ class Test(Operation):
             arguments.NETWORK_ARGUMENT,
             arguments.DATASET_ARGUMENT,
             arguments.WEIGHTS_FILE_ARGUMENT,
-            arguments.DILATE_VALIDATION_LABELS_ARGUMENT,
             arguments.VISUALIZE_COMPARISONS_ARGUMENT,
         ]
