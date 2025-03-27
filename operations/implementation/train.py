@@ -120,7 +120,7 @@ class Train(Operation):
         # %%
         # Train the network
         #
-        H = model.fit(
+        model.fit(
             train_gen(),
             steps_per_epoch=train_gen.num_images // network_config.batch_size,
             validation_data=val_gen(),
