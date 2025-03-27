@@ -1,14 +1,23 @@
 from typing import Callable
 
 import tensorflow as tf
-import tensorflow.keras.backend as K
-from keras.src import ops
+import keras
+from keras import ops
+from keras import backend as K
 
+from util.config.network_config import NetworkConfig
 from util.image_operations import dilation2d
+from util.types import LossType
+
+FOCAL_LOSS_ALPHA = 0.25
+FOCAL_LOSS_GAMMA = 2.0
+WCE_BETA = 10
+
 
 def clip_sum(tensor: tf.Tensor) -> float:
     """Clip the values between 0 and 1 and then sum them."""
-    return ops.sum(tf.clip_by_value(tensor, K.epsilon() , 1. - K.epsilon()))
+    return ops.sum(tf.clip_by_value(tensor, K.epsilon(), 1. - K.epsilon()))
+
 
 def weighted_binary_cross_entropy(beta: float) -> Callable[[tf.Tensor, tf.Tensor], tf.Tensor]:
     """
@@ -17,15 +26,17 @@ def weighted_binary_cross_entropy(beta: float) -> Callable[[tf.Tensor, tf.Tensor
 
     See https://medium.com/the-owl/weighted-binary-cross-entropy-losses-in-keras-e3553e28b8db
     """
+
     def loss_function(y_true: tf.Tensor, y_pred: tf.Tensor) -> tf.Tensor:
         y_pred = tf.clip_by_value(ops.convert_to_tensor(y_pred), K.epsilon(), 1. - K.epsilon())
         y_true = tf.clip_by_value(ops.cast(y_true, y_pred.dtype), K.epsilon(), 1. - K.epsilon())
 
-        bce = beta * y_true * tf.math.log(y_pred)         # Positive class, apply weight beta
-        bce += (1. - y_true) * tf.math.log(1. - y_pred)   # Negative class, apply weight 1.
+        bce = beta * y_true * tf.math.log(y_pred)  # Positive class, apply weight beta
+        bce += (1. - y_true) * tf.math.log(1. - y_pred)  # Negative class, apply weight 1.
         return ops.mean(-bce, axis=-1)
 
     return loss_function
+
 
 def dilated_dice_loss(y_true: tf.Tensor, y_pred: tf.Tensor) -> tf.Tensor:
     """
@@ -52,3 +63,25 @@ def dilated_dice_loss(y_true: tf.Tensor, y_pred: tf.Tensor) -> tf.Tensor:
     )
 
     return 1. - dice
+
+
+def determine_loss_function(config: NetworkConfig) -> Callable[[tf.Tensor, tf.Tensor], tf.Tensor]:
+    """Determine the loss function using the config and function specific values around it."""
+    match config.loss:
+        case LossType.FocalLoss:
+            return keras.losses.BinaryFocalCrossentropy(
+                from_logits=False,
+                apply_class_balancing=False,
+                alpha=FOCAL_LOSS_ALPHA,
+                gamma=FOCAL_LOSS_GAMMA
+            )
+        case LossType.BCE:
+            return keras.losses.BinaryCrossentropy()
+        case LossType.WCE:
+            return weighted_binary_cross_entropy(WCE_BETA)
+        case LossType.Dice:
+            return keras.losses.Dice()
+        case LossType.DiceDilate:
+            return dilated_dice_loss
+        case _:
+            raise ValueError(f'Unknown loss type: {config.loss}')
