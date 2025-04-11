@@ -3,6 +3,7 @@ File containing many input types used for matching to avoid string matching.
 """
 from enum import Enum
 
+
 class OperationType(Enum):
     """Mode of the program. Training trains a network, testing tests prediction performance, build builds the dataset, visualize visualizes the architecture."""
     Train = 'train'
@@ -10,12 +11,14 @@ class OperationType(Enum):
     Build = 'build'
     Visualize = 'visualize'
 
+
 class LossType(Enum):
     """Type of loss to use during training."""
     FocalLoss = 'focal_loss'
     WCE = 'wce'
     BCE = 'bce'
     Dice = 'dice'
+
 
 class MetricType(Enum):
     """Type of metrics to monitor during training."""
@@ -25,11 +28,13 @@ class MetricType(Enum):
     F1Score = 'f1_score'
     IoU = 'iou'
 
+
 class OptimizerType(Enum):
     """Types of optimization algorithms."""
     Adam = 'Adam'
     SGD = 'SGD'
     RMSprop = 'RMSprop'
+
 
 class ModelType(Enum):
     """Types of models used for the network. Some models can utilize backbones."""
@@ -41,6 +46,7 @@ class ModelType(Enum):
     PSPNet = 'PSPNet'
     FPN = 'FPN'
     LinkNet = 'LinkNet'
+
 
 class BackboneType(Enum):
     """

@@ -19,7 +19,7 @@ def load_model(network_config: NetworkConfig, output_config: OutputConfig, input
         best_value = '0000000000000'
         for candidate in candidates:
             # Assume the score is listed at the end (*_score.weights.h5)
-            if float(candidate[-9:-17]) > float(best_value[-9:-17]):
+            if float(candidate[-16:-11]) > float(best_value[-16:-11]):
                 best_value = candidate
 
         if best_value != '0000000000000':

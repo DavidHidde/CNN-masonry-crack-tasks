@@ -4,6 +4,13 @@ import keras
 import keras.backend as K
 from keras import ops
 
+from util.config import NetworkConfig
+from util.types import LossType
+
+FOCAL_LOSS_ALPHA = 0.25
+FOCAL_LOSS_GAMMA = 2.0
+WCE_BETA = 10
+
 
 def clip_sum(tensor: keras.KerasTensor) -> float:
     """Clip the values between 0 and 1 and then sum them."""
@@ -28,3 +35,24 @@ def weighted_binary_cross_entropy(beta: float) -> Callable[[keras.KerasTensor, k
         return ops.mean(-bce, axis=-1)
 
     return loss_function
+
+
+def determine_loss_function(config: NetworkConfig) -> Callable[
+    [keras.KerasTensor, keras.KerasTensor], keras.KerasTensor]:
+    """Determine the loss function using the config and function specific values around it."""
+    match config.loss:
+        case LossType.FocalLoss:
+            return keras.losses.BinaryFocalCrossentropy(
+                from_logits=False,
+                apply_class_balancing=False,
+                alpha=FOCAL_LOSS_ALPHA,
+                gamma=FOCAL_LOSS_GAMMA
+            )
+        case LossType.BCE:
+            return keras.losses.BinaryCrossentropy()
+        case LossType.WCE:
+            return weighted_binary_cross_entropy(WCE_BETA)
+        case LossType.Dice:
+            return keras.losses.Dice()
+        case _:
+            raise ValueError(f'Unknown loss type: {config.loss}')
