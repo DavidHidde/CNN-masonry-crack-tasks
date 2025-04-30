@@ -18,7 +18,6 @@ class LossType(Enum):
     WCE = 'wce'
     BCE = 'bce'
     Dice = 'dice'
-    DiceDilate = 'dice_dilated'
 
 
 class MetricType(Enum):
@@ -26,11 +25,8 @@ class MetricType(Enum):
     Accuracy = 'accuracy'
     Recall = 'recall'
     Precision = 'precision'
-    PrecisionDilated = 'precision_dilated'
     F1Score = 'f1_score'
-    F1ScoreDilated = 'f1_score_dilated'
     IoU = 'iou'
-    IoUDilated = 'iou_dilated'
 
 
 class OptimizerType(Enum):

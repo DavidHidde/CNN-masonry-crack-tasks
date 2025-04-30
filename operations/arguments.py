@@ -21,14 +21,6 @@ WEIGHTS_FILE_ARGUMENT = {
     'default': None,
     'required': False
 }
-DILATE_VALIDATION_LABELS_ARGUMENT = {
-    'name': ['--dilate'],
-    'help': 'Whether to dilate the validation labels.',
-    'type': bool,
-    'default': True,
-    'required': False,
-    'action': argparse.BooleanOptionalAction    # Enables --no-dilate
-}
 SAVE_MODEL_ARGUMENT = {
     'name': ['--save_model'],
     'help': 'Whether to dilate the validation labels.',
@@ -48,7 +40,7 @@ MONITOR_METRIC_ARGUMENT = {
     'name': ['--monitor_metric'],
     'help': 'The metric to monitor in the progression plot and as the main reason improvement heuristic.',
     'type': MetricType,
-    'default': MetricType.F1ScoreDilated,
+    'default': MetricType.F1Score,
     'required': False,
 }
 NO_LABELS_ARGUMENT = {

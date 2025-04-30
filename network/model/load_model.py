@@ -1,8 +1,8 @@
 import os
 import sys
 
-from tensorflow.keras.models import model_from_json
-from tensorflow.keras import Model
+from keras.models import model_from_json
+from keras import Model
 
 from util.config import NetworkConfig, OutputConfig
 from util.types import ModelType
@@ -15,11 +15,11 @@ def load_model(network_config: NetworkConfig, output_config: OutputConfig, input
     """
     # Resolve missing target by taking best performing model from the weights and model folder.
     if weights_file is None:
-        candidates = [weight for weight in os.listdir(output_config.best_models_dir) if weight.endswith('.keras')]
+        candidates = [weight for weight in os.listdir(output_config.best_models_dir) if weight.endswith('.weights.h5')]
         best_value = '0000000000000'
         for candidate in candidates:
-            # Assume the score is listed at the end (*_score.keras)
-            if float(candidate[-9:-6]) > float(best_value[-9:-6]):
+            # Assume the score is listed at the end (*_score.weights.h5)
+            if float(candidate[-16:-11]) > float(best_value[-16:-11]):
                 best_value = candidate
 
         if best_value != '0000000000000':

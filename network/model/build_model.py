@@ -2,7 +2,7 @@ import os
 import sys
 import tempfile
 
-import tensorflow as tf
+import keras
 import segmentation_models as sm
 
 from util.config import NetworkConfig
@@ -22,14 +22,14 @@ PSP_CONV_FILTERS = 512
 LINKNET_DECODER_FILTERS = (1024, 512, 256, 128, 64)
 LINKNET_DECODER_BLOCK_TYPE = 'transpose'
 
-def add_regularization(model: tf.keras.Model, regularization: float) -> tf.keras.Model:
+def add_regularization(model: keras.Model, regularization: float) -> keras.Model:
     """
     Add L2 regularization to a model.
 	The addition of regularization is based on the implementation shown in the link:
     https://sthalles.github.io/keras-regularizer/
     """
 
-    regularizer = tf.keras.regularizers.l2(regularization)
+    regularizer = keras.regularizers.l2(regularization)
 
     for layer in model.layers:
         for attr in ['kernel_regularizer']:
@@ -40,17 +40,17 @@ def add_regularization(model: tf.keras.Model, regularization: float) -> tf.keras
     model_json = model.to_json()
 
     # Save the weights before reloading the model.
-    tmp_weights_path = os.path.join(tempfile.gettempdir(), 'tmp_weights.h5')
+    tmp_weights_path = os.path.join(tempfile.gettempdir(), 'tmp.weights.h5')
     model.save_weights(tmp_weights_path)
 
     # Load the model from the config
-    new_model = tf.keras.models.model_from_json(model_json)
+    new_model = keras.models.model_from_json(model_json)
 
     # Reload the model weights
-    new_model.load_weights(tmp_weights_path, by_name=True)
+    new_model.load_weights(tmp_weights_path)
     return model
 
-def build_model(network_config: NetworkConfig, input_dims: tuple[int, int, int]) -> tf.keras.Model:
+def build_model(network_config: NetworkConfig, input_dims: tuple[int, int, int]) -> keras.Model:
     """
     Build the model itself. Note that this does not mean **compiling** the model, this still needs to be done afterwards.
     We just go past each case individually to ensure we set proper parameters.

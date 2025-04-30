@@ -1,4 +1,4 @@
-from tensorflow.keras.callbacks import Callback
+from keras.callbacks import Callback
 import os
 
 class EpochCheckpoint(Callback):
@@ -21,6 +21,6 @@ class EpochCheckpoint(Callback):
 		"""Serialize the model every interval epochs."""
 		if epoch % self.interval == 0:
 			if self.save_weights_only:
-				self.model.save_weights(os.path.join(self.checkpoints_dir, f'epoch_{epoch + 1}_weights.keras'))
+				self.model.save_weights(os.path.join(self.checkpoints_dir, f'epoch_{epoch + 1}.weights.h5'))
 			else:
-				self.model.save(os.path.join(self.checkpoints_dir, f'epoch_{epoch + 1}_model.keras'))
+				self.model.export(os.path.join(self.checkpoints_dir, f'epoch_{epoch + 1}_model.keras'))

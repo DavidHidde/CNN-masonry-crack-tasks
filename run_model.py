@@ -1,6 +1,7 @@
 import os
 
-os.environ['TF_USE_LEGACY_KERAS'] = '1' # Fall back to Keras 2. We need this before loading **anything** else
+
+os.environ["KERAS_BACKEND"] = 'tensorflow'
 os.environ['SM_FRAMEWORK'] = 'tf.keras'
 
 import argparse
